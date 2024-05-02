@@ -10,7 +10,7 @@ export const DIS_BG_ODD = "#ddd3c0";
 export const DIS_BG_EVN = "#d0c6b1";
 
 export const colors = [
-    "#000000", // 
+    "#000000", // Empty
     "#372fbd", // 1
     "#5ba646", // 2
     "#c53523", // 3

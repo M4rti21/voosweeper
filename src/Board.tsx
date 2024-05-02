@@ -9,81 +9,112 @@ type Props = {
 }
 
 export type Tile = {
-    num: number;
-    dis: boolean;
-    flagged: boolean;
     y: number;
     x: number;
+    value: number;
+    isBomb: boolean;
+    isEmpty: boolean;
+    isFlagged: boolean;
+    isRevealed: boolean;
+    isDisabled: boolean;
 }
 
 function Board({ size, bombs }: Props) {
 
     const [board, setBoard] = useState<Tile[][]>([]);
-    const [playing, setPlaying] = useState<boolean>(false);
+    const [flagCount, setFlagCount] = useState<number>(0);
+
     const [dead, setDead] = useState<boolean>(false);
+    const [playing, setPlaying] = useState<boolean>(false);
     const [timeReset, setTimeReset] = useState<boolean>(false);
 
     useEffect(() => {
         populateBoard();
     }, []);
 
+    useEffect(() => {
+        if (!checkWin()) return;
+        setPlaying(false);
+    }, [board]);
+
     function populateBoard() {
+        setFlagCount(0);
         const newBoard: Tile[][] = [];
         for (let i = 0; i < size; i++) {
             newBoard.push([]);
             for (let j = 0; j < size; j++) {
-                newBoard[i].push({ num: 0, dis: false, flagged: false, y: i, x: j });
+                newBoard[i].push({
+                    y: i, x: j,
+                    value: 0,
+                    isBomb: false,
+                    isEmpty: true,
+                    isFlagged: false,
+                    isRevealed: false,
+                    isDisabled: false,
+                });
             }
         }
         let placedBombsCount = 0;
         while (placedBombsCount < bombs) {
             const randY = Math.floor(Math.random() * size);
             const randX = Math.floor(Math.random() * size);
-            if (newBoard[randY][randX].num === BOMB_NUM) continue;
-            newBoard[randY][randX].num = BOMB_NUM;
+            if (newBoard[randY][randX].isBomb) continue;
+            newBoard[randY][randX].value = BOMB_NUM;
+            newBoard[randY][randX].isBomb = true;
+            newBoard[randY][randX].isEmpty = false;
             placedBombsCount++;
         }
-        for (let i = 0; i < size; i++) {
-            for (let j = 0; j < size; j++) {
+        for (let i = 0; i < newBoard.length; i++) {
+            for (let j = 0; j < newBoard.length; j++) {
                 findBombs(newBoard, i, j);
             }
         }
         setBoard(newBoard);
     }
 
-    function findBombs(board: Tile[][], y: number, x: number) {
-        if (board[y][x].num === BOMB_NUM) return;
+    function findBombs(newBoard: Tile[][], y: number, x: number) {
+        if (newBoard[y][x].isBomb) return;
         let count = 0;
         for (let h = y - 1; h <= y + 1; h++) {
             if (h < 0) continue;
-            if (h >= size) continue;
+            if (h >= newBoard.length) continue;
             for (let w = x - 1; w <= x + 1; w++) {
                 if (w < 0) continue;
-                if (w >= size) continue;
-                if (board[h][w].num === BOMB_NUM) count++;
+                if (w >= newBoard.length) continue;
+                if (newBoard[h][w].isBomb) count++;
             }
         }
         if (count === 0) return;
-        board[y][x].num = count;
+        newBoard[y][x].value = count;
+        newBoard[y][x].isEmpty = false;
     }
 
     function onCellFlag(tile: Tile): void {
-        if (tile.dis) return;
+        if (dead) return;
+        if (!playing) setPlaying(true);
+        if (tile.isDisabled) return;
         const newBoard = board.map((row) => row.map((col) => col));
-        newBoard[tile.y][tile.x].flagged = !tile.flagged;
+        if (newBoard[tile.y][tile.x].isFlagged) {
+            newBoard[tile.y][tile.x].isFlagged = false;
+            setFlagCount((prev) => prev - 1);
+        } else {
+            newBoard[tile.y][tile.x].isFlagged = true;
+            setFlagCount((prev) => prev + 1);
+        }
         setBoard(newBoard);
     }
 
     function onCellClick(tile: Tile): void {
         if (dead) return;
         if (!playing) setPlaying(true);
-        if (tile.flagged) {
+        if (tile.isFlagged) {
             onCellFlag(tile);
             return;
         }
-        if (tile.num === BOMB_NUM) {
+        if (tile.isBomb) {
             setDead(true);
             setPlaying(false);
+            revealBombs();
         }
         const newBoard = board.map((row) => row.map((col) => col));
         disableNeighbours(newBoard, tile.y, tile.x);
@@ -91,19 +122,30 @@ function Board({ size, bombs }: Props) {
     }
 
     function disableNeighbours(newBoard: Tile[][], y: number, x: number) {
-        if (newBoard[y][x].dis) return;
-        newBoard[y][x].dis = true;
-        newBoard[y][x].flagged = false;
-        if (newBoard[y][x].num > 0) return;
+        if (newBoard[y][x].isDisabled) return;
+        newBoard[y][x].isDisabled = true;
+        newBoard[y][x].isRevealed = true;
+        newBoard[y][x].isFlagged = false;
+        if (!newBoard[y][x].isEmpty) return;
         for (let h = y - 1; h <= y + 1; h++) {
             if (h < 0) continue;
-            if (h >= size) continue;
+            if (h >= newBoard.length) continue;
             for (let w = x - 1; w <= x + 1; w++) {
                 if (w < 0) continue;
-                if (w >= size) continue;
+                if (w >= newBoard.length) continue;
                 disableNeighbours(newBoard, h, w);
             }
         }
+    }
+
+    function revealBombs() {
+        const newBoard = board.map(row => row.map(col => col));
+        for (let i = 0; i < newBoard.length; i++) {
+            for (let j = 0; j < newBoard.length; j++) {
+                if (newBoard[i][j].isBomb) newBoard[i][j].isRevealed = true;
+            }
+        }
+        setBoard(newBoard);
     }
 
     function reset() {
@@ -115,10 +157,31 @@ function Board({ size, bombs }: Props) {
         populateBoard();
     }
 
-    return (<div className="flex flex-col items-center">
-        <div className="flex flex-row gap-8">
-            <Stopwatch running={playing} reset={timeReset} />
-            <button onClick={() => reset()} className="size-6 smile" />
+    function checkWin(): boolean {
+        for (let i = 0; i < board.length; i++) {
+            for (let j = 0; j < board.length; j++) {
+                if (board[i][j].isBomb) continue;
+                if (board[i][j].isFlagged) continue;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return (<div className="flex flex-col bg-secondary">
+        <div className="grid grid-cols-3 items-center">
+            <div className="text-black flex items-center justify-center">
+                <Stopwatch running={playing} reset={timeReset} />
+            </div>
+            <div className="flex items-center justify-center">
+                <button onClick={() => reset()}
+                    className="btn btn-primary rounded-none p-1 m-0 h-9 min-h-0">
+                    <span className="smile size-6" />
+                </button>
+            </div>
+            <div className="text-black flex items-center justify-center">
+                {flagCount.toString().padStart(3, "0")}
+            </div>
         </div>
         <div className="bg-primary" data-theme="valentine">
             {board?.map((row) => (
