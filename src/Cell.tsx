@@ -1,3 +1,4 @@
+import { MouseEvent } from "react";
 import { Tile } from "./Board";
 import { colors, BG_EVN, BG_ODD, DIS_BG_EVN, DIS_BG_ODD } from "./constants";
 
@@ -5,9 +6,10 @@ type Props = {
     tile: Tile;
     click: (tile: Tile) => void,
     flag: (tile: Tile) => void,
+    middle: (tile: Tile) => void,
 }
 
-function Cell({ tile, click, flag }: Props) {
+function Cell({ tile, click, flag, middle }: Props) {
 
     function getChar(): string | number {
         if (tile.isEmpty) return "";
@@ -36,10 +38,27 @@ function Cell({ tile, click, flag }: Props) {
         }
     }
 
+    function handleMouseDown(e: MouseEvent) {
+        e.preventDefault();
+        switch (e.button) {
+            case 0:
+                if (tile.isDisabled) return;
+                click(tile);
+                break;
+            case 1:
+                middle(tile)
+                break;
+            case 2:
+                if (tile.isDisabled) return;
+                flag(tile);
+                break;
+        }
+    }
+
     return (
-        <button className={`hover:brightness-90 disabled:hover:brightness-100 rounded-none size-8 cell ${tile.isRevealed ? tile.isBomb ? "bomb" : "" : tile.isFlagged ? "flag" : ""}`}
-            disabled={tile.isDisabled} style={{ color: colors[tile.value], backgroundColor: getBG() }}
-            onClick={() => click(tile)} onContextMenu={() => flag(tile)}>
+        <button className={`hover:brightness-90 rounded-none size-8 cell ${tile.isRevealed ? tile.isBomb ? "bomb" : "" : tile.isFlagged ? "flag" : ""}`}
+            style={{ color: colors[tile.value], backgroundColor: getBG() }}
+            onMouseDown={handleMouseDown}>
             {getChar()}
         </button>
     );
