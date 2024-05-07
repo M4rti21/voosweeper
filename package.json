@@ -39,7 +39,8 @@
         ],
         "directories": {
             "buildResources": "assets"
-        }
+        },
+        "icon": "public/icon.png"
     },
     "eslintConfig": {
         "extends": [
