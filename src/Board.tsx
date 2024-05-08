@@ -16,6 +16,7 @@ export type Tile = {
     y: number;
     x: number;
     value: number;
+    isDummy: boolean;
     isBomb: boolean;
     isEmpty: boolean;
     isFlagged: boolean;
@@ -23,24 +24,51 @@ export type Tile = {
     isDisabled: boolean;
 }
 
-function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props) {
+function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props) {
 
     const [board, setBoard] = useState<Tile[][]>([]);
 
     useEffect(() => {
+        createEmptyBoard();
+    }, []);
+
+    useEffect(() => {
+        createEmptyBoard();
+    }, [diff]);
+
+    useEffect(() => {
+        let flagCount = 0;
+        board.forEach(row => {
+            row.forEach(tile => {
+                if (tile.isFlagged) flagCount++;
+            })
+        })
+        setFlagCount(flagCount);
         if (!checkWin()) return;
         setPlaying(false);
     }, [board]);
 
-    useEffect(() => {
-        populateBoard();
-    }, []);
+    function createEmptyBoard() {
+        const newBoard: Tile[][] = [];
+        for (let i = 0; i < diff.size; i++) {
+            newBoard.push([]);
+            for (let j = 0; j < diff.size; j++) {
+                newBoard[i].push({
+                    y: i, x: j,
+                    value: 0,
+                    isDummy: true,
+                    isBomb: false,
+                    isEmpty: true,
+                    isFlagged: false,
+                    isRevealed: false,
+                    isDisabled: false,
+                });
+            }
+        }
+        setBoard(newBoard);
+    }
 
-    useEffect(() => {
-        populateBoard();
-    }, [diff]);
-
-    function populateBoard() {
+    function placeBombs(startTile: Tile) {
         setFlagCount(0);
         const newBoard: Tile[][] = [];
         for (let i = 0; i < diff.size; i++) {
@@ -49,6 +77,7 @@ function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props
                 newBoard[i].push({
                     y: i, x: j,
                     value: 0,
+                    isDummy: false,
                     isBomb: false,
                     isEmpty: true,
                     isFlagged: false,
@@ -62,6 +91,7 @@ function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props
             const randY = Math.floor(Math.random() * diff.size);
             const randX = Math.floor(Math.random() * diff.size);
             if (newBoard[randY][randX].isBomb) continue;
+            if (randY == startTile.y && randX == startTile.x) continue;
             newBoard[randY][randX].value = BOMB_NUM;
             newBoard[randY][randX].isBomb = true;
             newBoard[randY][randX].isEmpty = false;
@@ -69,13 +99,13 @@ function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props
         }
         for (let i = 0; i < newBoard.length; i++) {
             for (let j = 0; j < newBoard.length; j++) {
-                findBombs(newBoard, i, j);
+                placeNumbers(newBoard, i, j);
             }
         }
         setBoard(newBoard);
     }
 
-    function findBombs(newBoard: Tile[][], y: number, x: number) {
+    function placeNumbers(newBoard: Tile[][], y: number, x: number) {
         if (newBoard[y][x].isBomb) return;
         let count = 0;
         for (let h = y - 1; h <= y + 1; h++) {
@@ -94,6 +124,10 @@ function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props
 
     function onCellClick(tile: Tile): void {
         console.log(`click: ${tile.y}:${tile.x}`);
+        if (tile.isDummy) {
+            placeBombs(tile);
+            return;
+        }
         if (dead) return;
         if (!playing) setPlaying(true);
         if (tile.isFlagged) {
@@ -146,10 +180,8 @@ function Board({ diff, dead, setDead, playing, setPlaying, setFlagCount }: Props
         const newBoard = board.map((row) => row.map((col) => col));
         if (newBoard[tile.y][tile.x].isFlagged) {
             newBoard[tile.y][tile.x].isFlagged = false;
-            setFlagCount(prev => prev - 1);
         } else {
             newBoard[tile.y][tile.x].isFlagged = true;
-            setFlagCount(prev => prev + 1);
         }
         setBoard(newBoard);
     }
