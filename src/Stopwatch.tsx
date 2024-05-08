@@ -23,7 +23,7 @@ function Stopwatch({ running, reset }: Props) {
     return (
         <div className="stopwatch-container">
             <p className="stopwatch-time">
-                {seconds.toString().padStart(3, "0")}
+                {seconds.toString().padStart(5, "0")}
             </p>
         </div>
     );

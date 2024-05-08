@@ -13,37 +13,32 @@ function App() {
 
     const difficulties: Difficulty[] = [
         {
-            id: 0,
-            name: "easy",
+            id: 1,
+            name: "Easy",
             size: 9,
             bombs: 10
         },
         {
-            id: 1,
-            name: "intermediate",
+            id: 2,
+            name: "Intermediate",
             size: 16,
             bombs: 40,
         },
         {
-            id: 2,
-            name: "expert",
+            id: 3,
+            name: "Expert",
             size: 30,
             bombs: 99
         },
         {
-            id: 3,
-            name: "madness",
+            id: 4,
+            name: "Nino's Insane",
             size: 100,
             bombs: 727
         }
     ]
 
     const [diff, setDiff] = useState(difficulties[0]);
-
-    function handleDiffChange(e: any): void {
-        e.preventDefault();
-        setDiff({ ...difficulties[parseInt(e.currentTarget.value)] });
-    }
 
     const [dead, setDead] = useState<boolean>(false);
     const [playing, setPlaying] = useState<boolean>(false);
@@ -67,9 +62,8 @@ function App() {
         setDiff({ ...diff });
     }
 
-    return (<div autoFocus={true} tabIndex={-1} onKeyUpCapture={(e) => {
+    return (<div data-theme="valentine" autoFocus={true} tabIndex={-1} onKeyUpCapture={(e) => {
         e.preventDefault();
-        console.log(e.key);
         switch (e.key.toLowerCase()) {
             case "r":
                 reset();
@@ -88,17 +82,9 @@ function App() {
                 break;
         }
     }}>
-        <nav className="sticky top-0 bg-pink-400 w-full p-2 px-4 grid grid-cols-3 gap-8">
-            <label className="flex flex-row items-center gap-4">
-                <span className="text-xl">
-                    Difficulty:
-                </span>
-                <select onChange={handleDiffChange} value={diff.id}
-                    className="select text-lg select-secondary w-full max-w-xs">
-                    {difficulties.map((d) =>
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                    )}
-                </select>
+        <nav className="bg-secondary text-secondary-content sticky top-0 w-full p-2 px-4 grid grid-cols-3 gap-8 items-center">
+            <label className="text-xl">
+                Difficulty: {diff.name}
             </label>
             <div className="grid grid-cols-3 items-center">
                 <div className="flex flex-col justify-center items-center">
@@ -114,7 +100,7 @@ function App() {
                     </button>
                 </div>
                 <div className="flex flex-col justify-center items-center">
-                    <label>Flags:</label>
+                    <label>Bombs:</label>
                     <div className="text-black flex items-center justify-center">
                         {flagCount.toString().padStart(3, "0")}/{diff.bombs.toString().padStart(3, "0")}
                     </div>
@@ -131,25 +117,18 @@ function App() {
                 </div>
             </div>
         </main>
-        <footer className="sticky bottom-0 bg-pink-200 p-2 gap-8 flex flex-row items-center justify-center">
+        <footer className="sticky text-black bottom-0 bg-pink-200 p-2 gap-8 flex flex-row items-center justify-center">
             <div>KEYBINDS:</div>
+            {difficulties.map(d =>
+                <div>
+                    <kbd className="kbd rounded-lg font-bold text-base-content">{d.id}</kbd> = {d.name}
+                </div>
+            )}
             <div>
-                <kbd className="kbd rounded-lg">1</kbd> = Easy
+                <kbd className="kbd rounded-lg font-bold text-base-content">R</kbd> = Restart
             </div>
-            <div>
-                <kbd className="kbd rounded-lg">2</kbd> = Intermediate
-            </div>
-            <div>
-                <kbd className="kbd rounded-lg">3</kbd> = Expert
-            </div>
-            <div>
-                <kbd className="kbd rounded-lg">4</kbd> = Madness
-            </div>
-            <div>
-                <kbd className="kbd rounded-lg">R</kbd> = Restart
-            </div>
-        </footer>
-    </div>);
+        </footer >
+    </div >);
 }
 
 export default App;
