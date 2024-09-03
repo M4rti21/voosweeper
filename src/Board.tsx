@@ -26,15 +26,17 @@ export type Tile = {
 
 function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props) {
 
+    const [first, setFirst] = useState<Tile | undefined>();
     const [board, setBoard] = useState<Tile[][]>([]);
 
     useEffect(() => {
         createEmptyBoard();
-    }, []);
+    }, [diff]);
 
     useEffect(() => {
-        createEmptyBoard();
-    }, [diff]);
+        if (!first) return;
+        onCellClickNum(first.y, first.x);
+    }, [first]);
 
     useEffect(() => {
         let flagCount = 0;
@@ -66,6 +68,7 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
             }
         }
         setBoard(newBoard);
+        setFirst(undefined);
     }
 
     function placeBombs(startTile: Tile) {
@@ -103,6 +106,7 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
             }
         }
         setBoard(newBoard);
+        setFirst(startTile);
     }
 
     function placeNumbers(newBoard: Tile[][], y: number, x: number) {
@@ -120,6 +124,10 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
         if (count === 0) return;
         newBoard[y][x].value = count;
         newBoard[y][x].isEmpty = false;
+    }
+
+    function onCellClickNum(y: number, x: number) {
+        onCellClick(board[y][x]);
     }
 
     function onCellClick(tile: Tile): void {
