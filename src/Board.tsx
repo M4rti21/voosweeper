@@ -46,11 +46,14 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
             })
         })
         setFlagCount(flagCount);
-        if (!checkWin()) return;
-        setPlaying(false);
+        if (checkWin()) {
+            console.log("aaaaaaaaa");
+            setPlaying(false);
+        }
     }, [board]);
 
     function createEmptyBoard() {
+        setPlaying(false);
         const newBoard: Tile[][] = [];
         for (let i = 0; i < diff.size; i++) {
             newBoard.push([]);
@@ -134,6 +137,7 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
         console.log(`click: ${tile.y}:${tile.x}`);
         if (tile.isDummy) {
             placeBombs(tile);
+            setPlaying(true);
             return;
         }
         if (dead) return;
@@ -213,19 +217,19 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
 
     function revealBombs() {
         const newBoard = board.map(row => row.map(col => col));
-        for (let i = 0; i < newBoard.length; i++) {
-            for (let j = 0; j < newBoard.length; j++) {
-                if (newBoard[i][j].isBomb) newBoard[i][j].isRevealed = true;
+        for (let row of newBoard) {
+            for (let cell of row) {
+                if (cell.isBomb) cell.isRevealed = true;
             }
         }
         setBoard(newBoard);
     }
 
     function checkWin(): boolean {
-        for (let i = 0; i < board.length; i++) {
-            for (let j = 0; j < board.length; j++) {
-                if (board[i][j].isBomb) continue;
-                if (board[i][j].isFlagged) continue;
+        for (let row of board) {
+            for (let cell of row) {
+                if (cell.isBomb) continue;
+                if (cell.isFlagged) continue;
                 return false;
             }
         }
