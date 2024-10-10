@@ -98,6 +98,14 @@ function Board({ diff, dead, playing, setDead, setPlaying, setFlagCount }: Props
             const randX = Math.floor(Math.random() * diff.size);
             if (newBoard[randY][randX].isBomb) continue;
             if (randY == startTile.y && randX == startTile.x) continue;
+            if (randY == startTile.y -1 && randX == startTile.x) continue;
+            if (randY == startTile.y +1 && randX == startTile.x) continue;
+            if (randY == startTile.y && randX == startTile.x +1 ) continue;
+            if (randY == startTile.y && randX == startTile.x -1 ) continue;
+            if (randY == startTile.y -1 && randX == startTile.x -1 ) continue;
+            if (randY == startTile.y +1 && randX == startTile.x +1 ) continue;
+            if (randY == startTile.y +1 && randX == startTile.x -1 ) continue;
+            if (randY == startTile.y -1 && randX == startTile.x +1 ) continue;
             newBoard[randY][randX].value = BOMB_NUM;
             newBoard[randY][randX].isBomb = true;
             newBoard[randY][randX].isEmpty = false;
