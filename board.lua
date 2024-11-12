@@ -10,7 +10,6 @@ local function createBoard()
 				y = y,
 				x = x,
 				value = 0,
-				is_bomb = false,
 				is_exploded = false,
 				is_flagged = false,
 				is_revealed = false,
@@ -22,7 +21,7 @@ end
 
 local function placeNumbers(y, x)
 	local cell = BOARD[y][x]
-	if cell.is_bomb then
+	if cell.value == 9 then
 		return
 	end
 	local count = 0
@@ -30,7 +29,7 @@ local function placeNumbers(y, x)
 		if h > 0 and h <= BOARD_SIZE then
 			for w = x - 1, x + 1, 1 do
 				if w > 0 and w <= BOARD_SIZE then
-					if BOARD[h][w].is_bomb then
+					if BOARD[h][w].value == 9 then
 						count = count + 1
 					end
 				end
@@ -63,7 +62,7 @@ local function placeBombs(start_tile)
 			local rand_y = love.math.random(1, BOARD_SIZE)
 			local rand_x = love.math.random(1, BOARD_SIZE)
 			local cell = BOARD[rand_y][rand_x]
-			if cell.is_bomb then
+			if cell.value == 9 then
 				return
 			elseif rand_y == start_tile.y and rand_x == start_tile.x then
 				return
@@ -85,7 +84,6 @@ local function placeBombs(start_tile)
 				return
 			end
 			cell.value = 9
-			cell.is_bomb = true
 			placed_bomb_count = placed_bomb_count + 1
 		end
 		iterate()
@@ -100,7 +98,7 @@ end
 local function drawBoard()
 	love.graphics.setFont(FONT)
 	for y in pairs(BOARD) do
-		local y_offset = CELL_SIZE * (y - 1)
+		local y_offset = CELL_SIZE * (y - 1) + BAR_HEIGHT
 		for x in pairs(BOARD[y]) do
 			local cell = BOARD[y][x]
 			if (x + y) % 2 == 0 then
@@ -139,10 +137,21 @@ local function drawBoard()
 	end
 end
 
+local function revealBombs()
+	for y in pairs(BOARD) do
+		for x in pairs(BOARD[y]) do
+			if BOARD[y][x].value == 9 then
+				BOARD[y][x].is_revealed = true
+			end
+		end
+	end
+end
+
 return {
 	createBoard = createBoard,
 	placeBombs = placeBombs,
 	placeNumbers = placeNumbers,
 	drawBoard = drawBoard,
 	flagsAroundCell = flagsAroundCell,
+	revealBombs = revealBombs,
 }

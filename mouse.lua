@@ -1,66 +1,83 @@
-require("globals")
+local game = require("game")
 local actions = require("actions")
 local board = require("board")
 
-MOUSE_DOWN = false
-
 local function mouseOverBoard(y, x)
-	print(y, x)
-	local y_board = y <= (BOARD_SIZE * CELL_SIZE) and y > 0
-	local x_board = x <= (BOARD_SIZE * CELL_SIZE) and x > 0
-	return y_board and x_board
+	local y_board = y > BAR_HEIGHT and y < BOARD_PX + BAR_HEIGHT
+	local x_board = x < BOARD_PX and x > 0
+	y = math.ceil((y - BAR_HEIGHT) / CELL_SIZE)
+	x = math.ceil(x / CELL_SIZE)
+	return { y_board and x_board, y, x }
+end
+
+local function mouseOverReset(y, x)
+	local x_center = BOARD_PX / 2
+	local y_center = BAR_HEIGHT / 2
+	local reset_radius = 15
+
+	local y_reset = y > y_center - reset_radius / 2 and y < y_center + reset_radius / 2
+	local x_reset = x > x_center - reset_radius / 2 and x < x_center + reset_radius / 2
+	return y_reset and x_reset
 end
 
 local function handleLeftClick(y, x)
-	if mouseOverBoard(y, x) then
-		y = math.ceil(y / CELL_SIZE)
-		x = math.ceil(x / CELL_SIZE)
-		actions.clickCell(y, x)
+	local m = mouseOverBoard(y, x)
+	if m[1] then
+		if DEAD then
+			return
+		end
+		if BOARD[m[2]][m[3]].is_flagged then
+			actions.toggleFlag(m[2], m[3])
+			return
+		end
+		print(m[1], m[2], m[3])
+		actions.clickCell(m[2], m[3])
+		return
 	end
+	local r = mouseOverReset(y, x)
+	if r then
+		game.startGame()
+		return
+	end
+	-- x_center, y_center, 15
 end
 
 local function handleRightClick(y, x)
-	if mouseOverBoard(y, x) then
-		y = math.ceil(y / CELL_SIZE)
-		x = math.ceil(x / CELL_SIZE)
-		actions.toggleFlag(y, x)
+	local m = mouseOverBoard(y, x)
+	if m[1] then
+		if not PLAYING and DEAD then
+			return
+		end
+		actions.toggleFlag(m[2], m[3])
+		return
 	end
 end
 
 local function handleMiddleClick(y, x)
-	if not PLAYING then
-		return
-	end
-	if mouseOverBoard(y, x) then
-		x = math.ceil(x / CELL_SIZE)
-		y = math.ceil(y / CELL_SIZE)
-		local flags = board.flagsAroundCell(y, x)
-		if flags == BOARD[y][x].value then
-			actions.clickAroundCell(y, x)
+	local m = mouseOverBoard(y, x)
+	if m[1] then
+		if not PLAYING and DEAD then
+			return
 		end
+		if BOARD[m[2]][m[3]].is_flagged then
+			actions.toggleFlag(m[2], m[3])
+			return
+		end
+		local flags = board.flagsAroundCell(m[2], m[3])
+		if flags == BOARD[m[2]][m[3]].value then
+			actions.clickAroundCell(m[2], m[3])
+		end
+		return
 	end
 end
 
-local function handleMouse()
-	local mx, my = love.mouse.getPosition()
-	if love.mouse.isDown(1) then
-		if MOUSE_DOWN then
-			return
-		end
-		MOUSE_DOWN = true
-		handleLeftClick(my, mx)
-	elseif love.mouse.isDown(2) then
-		if MOUSE_DOWN then
-			return
-		end
-		MOUSE_DOWN = true
-		handleRightClick(my, mx)
-	elseif love.mouse.isDown(3) then
-		if MOUSE_DOWN then
-			return
-		end
-		MOUSE_DOWN = true
-		handleMiddleClick(my, mx)
+local function handleMouse(x, y, btn)
+	if btn == 1 then
+		handleLeftClick(y, x)
+	elseif btn == 2 then
+		handleRightClick(y, x)
+	elseif btn == 3 then
+		handleMiddleClick(y, x)
 	else
 		MOUSE_DOWN = false
 	end

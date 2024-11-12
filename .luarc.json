@@ -1,6 +1,4 @@
 {
-    "diagnostics.globals": [
-        "vim",
-        "love"
-    ]
+    "diagnostics.globals": ["vim", "love"]
 }
+
