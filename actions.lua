@@ -5,6 +5,7 @@ local function revealCell(y, x)
 	if BOARD[y][x].is_revealed then
 		return
 	end
+	REVEALED_COUNT = REVEALED_COUNT + 1
 	BOARD[y][x].is_revealed = true
 	if BOARD[y][x].is_flagged then
 		BOARD[y][x].is_flagged = false
@@ -73,7 +74,7 @@ local function clickCell(y, x)
 		PLAYING = true
 		board.placeBombs(BOARD[y][x])
 	end
-	BOARD[y][x].is_revealed = true
+	revealCell(y, x)
 	if BOARD[y][x].value == 9 then
 		BOARD[y][x].is_exploded = true
 		DEAD = true
@@ -86,4 +87,5 @@ return {
 	clickCell = clickCell,
 	clickAroundCell = clickAroundCell,
 	toggleFlag = toggleFlag,
+	revealCell = revealCell,
 }

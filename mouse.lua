@@ -1,6 +1,7 @@
 local game = require("game")
 local actions = require("actions")
 local board = require("board")
+local bar = require("bar")
 
 local function mouseOverBoard(y, x)
 	local y_board = y > BAR_HEIGHT and y < BOARD_PX + BAR_HEIGHT
@@ -20,7 +21,21 @@ local function mouseOverReset(y, x)
 	return y_reset and x_reset
 end
 
+local function mouseOverDropdown(y, x)
+	local drop = bar.getDropdownBox()
+	local y_drop = y > drop.y1 and y < drop.y2
+	local x_drop = x > drop.x1 and x < drop.x2
+	return y_drop and x_drop
+end
+
 local function handleLeftClick(y, x)
+	if mouseOverDropdown(y, x) then
+		bar.clickDropdown(y, x)
+		return
+	end
+	if DROPDOWN_OPEN then
+		return
+	end
 	local m = mouseOverBoard(y, x)
 	if m[1] then
 		if DEAD then
@@ -30,13 +45,11 @@ local function handleLeftClick(y, x)
 			actions.toggleFlag(m[2], m[3])
 			return
 		end
-		print(m[1], m[2], m[3])
 		actions.clickCell(m[2], m[3])
 		return
 	end
-	local r = mouseOverReset(y, x)
-	if r then
-		game.startGame()
+	if mouseOverReset(y, x) then
+		game.startGame(CURRENT_DIFF)
 		return
 	end
 	-- x_center, y_center, 15
@@ -75,8 +88,14 @@ local function handleMouse(x, y, btn)
 	if btn == 1 then
 		handleLeftClick(y, x)
 	elseif btn == 2 then
+		if DROPDOWN_OPEN then
+			return
+		end
 		handleRightClick(y, x)
 	elseif btn == 3 then
+		if DROPDOWN_OPEN then
+			return
+		end
 		handleMiddleClick(y, x)
 	else
 		MOUSE_DOWN = false

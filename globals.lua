@@ -1,3 +1,26 @@
+DIFICULTIES = {
+	{
+		name = "Easy",
+		board = 9,
+		bombs = 10,
+	},
+	{
+		name = "Intermediate",
+		board = 16,
+		bombs = 40,
+	},
+	{
+		name = "Expert",
+		board = 30,
+		bombs = 99,
+	},
+	{
+		name = "God",
+		board = 100,
+		bombs = 727,
+	},
+}
+
 return {
 	init_stuff = function()
 		ICON_IMG = love.graphics.newImage("src/icon.png", nil)
@@ -10,7 +33,10 @@ return {
 		WIN_COLOR = { love.math.colorFromBytes(0, 0, 0) }
 		LOOSE_COLOR = { love.math.colorFromBytes(0, 0, 0) }
 
+		BAR_HEIGHT = 64
 		BAR_COLOR = { love.math.colorFromBytes(209, 209, 209) }
+		DROPDOWN_SELECTED = { love.math.colorFromBytes(100, 100, 100) }
+		DROPDOWN_ITEM = { love.math.colorFromBytes(150, 150, 150) }
 		FLAG_COLOR = { love.math.colorFromBytes(255, 0, 0) } -- #ff0000
 		BOMB_COLOR = { love.math.colorFromBytes(0, 0, 0) } -- #000000
 		BOMB_EXPLODED_COLOR = { love.math.colorFromBytes(255, 255, 0) } -- #ffff00
@@ -38,21 +64,5 @@ return {
 				odd = { love.math.colorFromBytes(221, 221, 192) }, -- #ddd3c0
 			},
 		}
-	end,
-	init_game = function()
-		BOARD = {}
-		CELL_SIZE = 32
-		BOARD_SIZE = 20
-		BOARD_PX = BOARD_SIZE * CELL_SIZE
-
-		BOMB_COUNT = 50
-		FLAG_COUNT = 0
-		CELL_COUNT = BOARD_SIZE * BOARD_SIZE
-		REVEALED_COUNT = 0
-		BAR_HEIGHT = 64
-		ELAPSED_TIME = 0
-
-		PLAYING = false
-		DEAD = false
 	end,
 }

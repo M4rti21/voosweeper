@@ -6,15 +6,14 @@ local game = require("game")
 
 function love.load()
 	globals.init_stuff()
-	game.startGame()
+	game.startGame(1)
 	love.window.setTitle("Voosweeper")
 	-- love.window.setIcon(ICON_IMG:getData())
-	love.window.setMode(BOARD_PX, BOARD_PX + BAR_HEIGHT)
 end
 
 function love.draw()
-	bar.drawBar()
 	board.drawBoard()
+	bar.drawBar()
 end
 
 function love.update(dt)
