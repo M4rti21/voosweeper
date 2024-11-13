@@ -1,3 +1,8 @@
-# Voosweeper !!!!!!!!!! <3
+### TODO:
 
-Just a minesweeper game :3
+- [x] Add multiple difficulties
+- [x] Add difficulty dropdown
+- [ ] Add feedback for winning/loosing
+- [ ] Add pngs instead of shapes?
+- [ ] Add app icon
+- [ ] Compile + test on windows
